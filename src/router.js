@@ -12,6 +12,33 @@ export default new Router({
         path: '/',
         name: 'index',
         component: Index
+      },
+      {
+        path: '/management',
+        name: 'Management',
+        component: ()=> import('@/view/Management.vue'),
+        children: [
+          {
+            path: '/',
+            name: 'Statistics',
+            component: () => import('@/components/Statistics.vue')
+          },
+          {
+            path: '/management/upload',
+            name: 'Upload',
+            component: () => import('@/components/Upload.vue')
+          },
+          {
+            path: '/management/orders',
+            name: 'Orders',
+            component: () => import('@/components/Orders.vue')
+          },
+          {
+            path: '/management/logistics',
+            name: 'Logistics',
+            component: () => import('@/components/Logistics.vue')
+          }
+        ]
       }
     ]
   })

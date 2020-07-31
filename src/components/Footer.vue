@@ -2,34 +2,46 @@
     <div class="footer">
         <article id="footer">
             <img src="../assets/qr.png" />
-            <h6>扫码加店长了解更多~</h6>
-            <p>声明：balabalabalabala</p>
+            <content>
+                <h6>扫码加店长了解更多~</h6>
+                <p>声明：balabalabalabala</p>
+            </content>
         </article>
     </div>
 </template>
+<script>
+export default {
+    name: 'Footer'
+}
+</script>
 <style scoped>
   .footer{
       width: 100%;
       position: relative;
   }
   #footer{
+      height: 62%;
       position: absolute;
-      bottom: 0;
-      padding: 0 50px;
+      bottom: 50%;
+      transform: translateY(50%);
+      padding: 20px 50px;
       width: 100%;
       background-color: #131313;
-      padding-bottom: 64px;
-      height: 310px;
       color: #dbd9d9;
-      text-align: center;
+      text-align: left;
+      display: flex;
+      justify-content: center;
+      align-items: center;
   }
   #footer img{
       width: 200px;
-      margin-top: -60px;
   }
   #footer h6{
       color: #86868b;
       padding-bottom: 12px;
       border-bottom: #ffffff1c solid 1px;
+  }
+  #footer content{
+      margin-left: 32px;
   }
 </style>

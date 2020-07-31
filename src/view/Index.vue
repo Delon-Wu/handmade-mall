@@ -3,7 +3,7 @@
         <Cover ref="cover" />
         <ShowPage ref="showpage" />
         <Footer ref="footer" />
-        <BottomBar ref="bottombar" />
+        <BottomBar />
     </div>
 </template>
 <script>
@@ -29,7 +29,7 @@ export default {
     },
     data() {
         return {
-            corentPage: 1
+            currentPage: 1
         }
     },
     mounted() {
@@ -45,30 +45,30 @@ export default {
             var context = this
             delay(function() {
                 let scrollHeight = window.innerHeight
-                switch (context.corentPage) {
+                switch (context.currentPage) {
                     case 1:
                     if(e.deltaY > 0){
                         console.log('下来第二页')
                         context.$refs.index.style.top = (-scrollHeight) + 'px'
-                        context.corentPage++
+                        context.currentPage++
                     }
                     break;
                     case 2:
                         if(e.deltaY > 0){
                         console.log('下来第三页')
                         context.$refs.index.style.top = 2*(-scrollHeight) + 'px'
-                        context.corentPage++
+                        context.currentPage++
                     }else if(e.deltaY < 0){
                         console.log('上去第一页')
                         context.$refs.index.style.top = 0 + 'px'
-                        context.corentPage--
+                        context.currentPage--
                     }
                     break;
                     case 3:
                         if(e.deltaY < 0){
                             console.log('上去第二页')
                             context.$refs.index.style.top = -scrollHeight + 'px'
-                            context.corentPage--
+                            context.currentPage--
                         }
                     break;
                 }

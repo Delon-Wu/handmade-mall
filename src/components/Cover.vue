@@ -1,9 +1,9 @@
 <template>
     <div class= "cover">
-        <div class= "top border"></div>
+        <div class= "top header-border"></div>
         <h1>欢迎光临</h1>
         <h2>月亮与六元<span class="small-font ">の手作屋</span></h2>
-        <div class= "bottom border"></div>
+        <div class= "bottom header-border"></div>
         <b-icon-chevron-double-down style="color: #d5d5d5; width: 32px; height: 32px "></b-icon-chevron-double-down>
     </div>
 </template>
@@ -17,8 +17,9 @@ export default {
 <style scoped>
   .cover{
     border: transparent solid 1px;
+    text-align: center;
   }
-  .border{
+  .header-border{
       margin: auto;
   }
   .top{
