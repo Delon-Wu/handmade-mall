@@ -27,13 +27,13 @@ export default {
       width: 42px;
       margin-bottom: 80px;
       margin-top: 80px;
-      background-color: #ffee00;
+      background-color: #fdf352;
   }
   .bottom{
       height: 8px;
       width: 32px;
       margin-top: 80px;
-      background-color: #ffee00;
+      background-color: #fdf352;
   }
     h1,h2{
         font-weight: lighter;

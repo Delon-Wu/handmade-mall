@@ -1,8 +1,10 @@
 <template>
-    <div class="index" ref="index" v-on:wheel.capture="scroll">
-        <Cover ref="cover" />
-        <ShowPage ref="showpage" />
-        <Footer ref="footer" />
+    <div class="index" ref="index">
+        <main v-on:wheel.capture="scroll">
+            <Cover ref="cover" />
+            <ShowPage ref="showpage" />
+            <Footer ref="footer" />
+        </main>
         <BottomBar />
     </div>
 </template>
@@ -48,25 +50,21 @@ export default {
                 switch (context.currentPage) {
                     case 1:
                     if(e.deltaY > 0){
-                        console.log('下来第二页')
                         context.$refs.index.style.top = (-scrollHeight) + 'px'
                         context.currentPage++
                     }
                     break;
                     case 2:
                         if(e.deltaY > 0){
-                        console.log('下来第三页')
                         context.$refs.index.style.top = 2*(-scrollHeight) + 'px'
                         context.currentPage++
                     }else if(e.deltaY < 0){
-                        console.log('上去第一页')
                         context.$refs.index.style.top = 0 + 'px'
                         context.currentPage--
                     }
                     break;
                     case 3:
                         if(e.deltaY < 0){
-                            console.log('上去第二页')
                             context.$refs.index.style.top = -scrollHeight + 'px'
                             context.currentPage--
                         }

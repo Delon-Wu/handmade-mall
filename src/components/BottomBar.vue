@@ -7,12 +7,27 @@
           backdrop
           shadow
         >
-          <div class="px-3 py-2">
-            <b-form-group label="Backdrop variant" label-for="backdrop-variant">
-              <b-form-select id="backdrop-variant" v-model="variant" :options="variants"></b-form-select>
-            </b-form-group>
-          </div>
+          <b-list-group flush>
+            <b-list-group-item class="d-flex justify-content-between align-items-center" 
+              v-for="(item, index) in cartProducts" 
+              :key="index"
+            >
+                <b-avatar square :src="item.path"></b-avatar>
+                <div style="max-width:102px"> 
+                  {{item.title}} <i class="text-danger">￥:{{item.price}}</i>
+                </div>
+              <b-form-spinbutton size="sm" v-model="item.quantity" inline min="0"></b-form-spinbutton>
+            </b-list-group-item>
+            <b-list-group-item class="d-flex justify-content-around align-items-center">
+              <b-button squared variant="outline-dark" @click="setCartItems({items: []})"><b-icon-trash></b-icon-trash></b-button>
+              <div class="text-danger">合计：{{cartTotalPrice}}元</div>
+            </b-list-group-item>
+          </b-list-group>
+          <template v-slot:footer>
+            <b-button squared block variant="warning" :disabled="!cartTotalPrice" @click="affirmOrder=true">确认下单</b-button>
+          </template>
         </b-sidebar>
+
         <b-sidebar 
           id="sidebar-right" 
           title="聊天窗口"
@@ -29,15 +44,60 @@
             <b-img src="https://picsum.photos/500/500/?image=54" fluid thumbnail></b-img>
           </div>
         </b-sidebar>
+
+        <b-modal
+          v-model="affirmOrder"
+          title="支付"
+          header-bg-variant="dark"
+          header-text-variant="light"
+          body-bg-variant="light"
+          body-text-variant="dark"
+          footer-bg-variant="warning"
+          footer-text-variant="light"
+        >
+          <b-container class="d-flex justify-content-between align-items-start">
+              <p class="text-danger">合计：{{cartTotalPrice}}元</p>
+              <img style="max-width:130px" src="../assets/wechatpay.jpg">
+              <img style="max-width:130px" src="../assets/alipay.jpg">
+          </b-container>
+
+          <template v-slot:modal-footer>
+            <div class="w-100">
+              <p class="float-left">
+                付款后给掌柜留言，留下邮递的地址联系方式
+                <b-form-checkbox
+                id="checkbox-1"
+                v-model="affirmStatus"
+                name="checkbox-1"
+                value="accepted"
+                unchecked-value="not_accepted"
+              >
+                已了解购买流程
+              </b-form-checkbox>
+            </p>
+              <b-button
+                variant="primary"
+                size="sm"
+                class="float-right"
+                @click="submitOders"
+                :disabled="affirmStatus != 'accepted'"
+              >
+                确认已支付
+              </b-button>
+            </div>
+          </template>
+        </b-modal>
+
         <div class="flex-header">
-          <span id="func-btn" v-show="!show">
-            <b-icon-cart id="cart-btn" v-b-toggle.sidebar-backdrop></b-icon-cart>
-            <b-icon-cloud id="admin-btn" @click="goToManage()"></b-icon-cloud>
+          <span id="func-btn" v-show="isLogedIn">
+            <b-icon-cart id="cart-btn" :variant="cartTotalPrice? 'danger': ''" v-b-toggle.sidebar-backdrop></b-icon-cart>
+            <b-icon-card-checklist v-b-tooltip.hover title="我的订单"></b-icon-card-checklist>
+            <b-icon-cloud id="admin-btn" v-if="isManager" v-b-tooltip.hover title="后台管理" @click="goToManage()"></b-icon-cloud>
           </span>
           <h1 :class="{'align-left': bbTag}">月亮与六元の手作屋
               <b-icon-caret-down id="bb-move-btn" :class="{rotate: bbTag}" @click="upOrDown"></b-icon-caret-down>
           </h1>
-          <span id="user-bar" v-show="!show">
+          <span id="user-bar" v-show="isLogedIn">
             <span class="avatar">{{nickName.charAt(0)}}</span>
             <span>{{nickName}}</span>
             <b-icon-chat-square class="chat-btn" v-show="normalChat" v-b-toggle.sidebar-right></b-icon-chat-square>
@@ -61,10 +121,14 @@
               <b-button  type="reset" variant="danger">重置</b-button>
             </div>
         </b-form>
-        <b-icon-box-arrow-right id="exit-btn" v-b-tooltip.hover title="注销" style="font-size: 50px" v-show="!show" @click="logOut"></b-icon-box-arrow-right>
+        <b-button size="sm" variant="outline-warning" class="mb-2" v-show="!show" @click="logOut">
+          <b-icon icon="power" aria-hidden="true"></b-icon> Logout
+        </b-button>
     </div>
 </template>
 <script>
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+
 export default {
     name: 'BottomBar',
     computed: {
@@ -91,7 +155,14 @@ export default {
         } else {
           return 'Please enter something'
         }
-      }
+      },
+      ...mapState({
+        cart: state => state.cart,
+      }),
+      ...mapGetters('cart', [
+        'cartProducts',
+        'cartTotalPrice'
+      ])
     },
     data() {
       return {
@@ -100,24 +171,37 @@ export default {
         email: '',
         password: '',
         bbTag: false,
-        normalChat: true
+        normalChat: true,
+        isLogedIn: false,
+        isManager: false,
+        affirmOrder: false,
+        affirmStatus: ''
       }
     },
     mounted() {
       let context = this
       context.$axios.get('/log_in').then((response)=>{
-        console.log(response.data)
+        // console.log(response.data)
         if(response.data instanceof Object){
           context.show = false
+          context.isLogedIn = true
           context.nickName = response.data.nickname
+          if(response.data.id === 1) context.isManager = true
         }else{
           context.show = true
+          context.isLogedIn= false
         }
       }).catch(function(err){
               console.log(err)
         })
     },
     methods: {
+      ...mapMutations('cart',[
+        'setCartItems'
+      ]),
+      ...mapActions('cart', [
+        'checkout'
+      ]),
        makeToast(append = false, logTitle = '叮~', logMessage) {
           this.$bvToast.toast(logMessage, {
             title: logTitle,
@@ -134,11 +218,16 @@ export default {
               nickName: context.nickName || context.email,
               password: context.password
             }).then(function(res){
-              if(res.data.code == '0000' || res.data.code == '0001'){
+              const logCode = res.data.code
+              if(logCode == '0000' || logCode == '0001'){
                 context.nickName = res.data.nickName
                 context.show = false
-                let logMessage = res.data.code == '0000'? '注册成功 : )': '登录成功 : )'
+                context.isLogedIn = true
+                if(res.data.id === 1) context.isManager = true
+                let logMessage = logCode == '0000'? '注册成功 :- )': '登录成功 :- )'
                 context.makeToast(false, undefined, logMessage)
+              }else if(logCode == '0004'){
+                context.makeToast(true, 'duang~', '密码错误哦 :-(')
               }
             }).catch(function(err){
               console.log(err)
@@ -162,6 +251,7 @@ export default {
             console.log('[logOut Response] -',response)
             if(response.data.code == '0005'){
               context.show = true
+              context.isLogedIn = false
               context.makeToast(false, undefined, response.data.message)
             }
           })
@@ -175,6 +265,10 @@ export default {
         },
         goToManage() {
           this.$router.push({name: 'Management'})
+        },
+        submitOders() {
+          this.checkout()
+          this.affirmOrder = false
         }
     }
 }
@@ -198,7 +292,7 @@ export default {
   justify-content: space-around;
   align-items: center;
   flex-wrap: wrap;
-  color: #fe0;
+  color: #fdf352;
 }
 .bottom-bar h1{
     margin: 20px 0;
@@ -216,8 +310,7 @@ export default {
   display: flex;
   justify-content: space-evenly;
   color: #b8b8b8;
-  font-size: 16px;
-  cursor: pointer;
+  font-size: 18px;
 }
 #exit-btn{
   font-size: 24px;
@@ -226,6 +319,7 @@ export default {
 }
 #func-btn svg:hover,#exit-btn:hover{
   color: #fff;
+  cursor: pointer;
 }
 #user-bar{
   max-width: 350px;
@@ -233,6 +327,7 @@ export default {
   display: inline-flex;
   justify-content: space-between;
   font-size: 16px;
+  font-weight: lighter;
   align-items: center;
   top: 14px;
 }
@@ -240,8 +335,7 @@ export default {
   width:38px;
   height: 38px;
   border-radius: 19px;
-  background-color: #ffc500;
-  font-weight: bolder;
+  background-color: #555;
   color: #fff;
   line-height: 35px;
 }

@@ -3,44 +3,39 @@ module.exports = {
     devServer: {
         proxy: {
             '/log_up_or_in': {
-                target: 'http://www.delon.store:8080',
+                target: 'http://www.delon.store:8080/api',
                 ws: true,
-                changeOrigin: true,
-                pathRewrite: {
-                    '^/log_up_or_in': '/log_up_or_in'
-                }
+                changeOrigin: true
             },
             '/log_in': {
-                target: 'http://www.delon.store:8080',
+                target: 'http://www.delon.store:8080/api',
                 ws: true,
-                changeOrigin: true,
-                pathRewrite: {
-                    '^/log_in': '/log_in'
-                }
+                changeOrigin: true
             },
             '/log_out': {
-                target: 'http://www.delon.store:8080',
+                target: 'http://www.delon.store:8080/api',
                 ws: true,
-                changeOrigin: true,
-                pathRewrite: {
-                    '^/log_out': '/log_out'
-                }
+                changeOrigin: true
             },
             '/upload': {
-                target: 'http://www.delon.store:8080',
+                target: 'http://www.delon.store:8080/api',
                 ws: true,
-                changeOrigin: true,
-                pathRewrite: {
-                    '^/upload': '/upload'
-                }
+                changeOrigin: true
             },
             '/get_goods_list': {
-                target: 'http://www.delon.store:8080',
+                target: 'http://www.delon.store:8080/api',
                 ws: true,
-                changeOrigin: true,
-                pathRewrite: {
-                    '^/get_goods_list': '/get_goods_list'
-                }
+                changeOrigin: true
+            },
+            '/post_oders': {
+                target: 'http://www.delon.store:8080/api',
+                ws: true,
+                changeOrigin: true
+            },
+            '/get_oders': {
+                target: 'http://www.delon.store:8080/api',
+                ws: true,
+                changeOrigin: true
             }
         }
     }

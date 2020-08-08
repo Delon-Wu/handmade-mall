@@ -28,12 +28,13 @@
                 
                 <b-row>
                     <b-col>
-                        <b-form-input id="good-title-1" v-model="title" placeholder="输入标题 :-)" maxlength="7"></b-form-input>
-                        <b-form-textarea v-model="description" placeholder="输入描述 :-)" maxlength="24"></b-form-textarea>
+                        <b-form-input id="good-title" v-model="title" placeholder="输入标题 :-)" maxlength="7"></b-form-input>
+                        <b-form-textarea id="good-description" v-model="description" placeholder="输入描述 :-)" maxlength="24"></b-form-textarea>
+                        <b-form-input type="number" id="good-price" v-model="price" placeholder="定格价格把 :-)" min="0.01" max="9999"></b-form-input>
                     </b-col>
                     <b-col>
-                        <b-row id="good-title-2">{{title.length}} / 7</b-row>
-                        <b-row id="good-description">{{description.length}} / 24, [13, 24]</b-row>
+                        <b-row id="good-title-words">{{title.length}} / 7</b-row>
+                        <b-row id="good-description">{{description.length}} / 24</b-row>
                     </b-col>
                 </b-row>
                 <b-row v-show="showImgs">
@@ -59,6 +60,7 @@ export default {
             file: null,
             title: '',
             description: '',
+            price: 0,
             imgUrl: [],
             showImgs: false,
             isUpLoading: false
@@ -80,6 +82,7 @@ export default {
             })
             formData.append('title', context.title)
             formData.append('description', context.description)
+            formData.append('price', context.price)
             context.$axios.post('/upload',formData)
                 .then(function(response){
                     console.log('uploadResponse', response)
@@ -139,7 +142,7 @@ export default {
     text-align: left;
     position: relative;
 }
-.upload-form>div,#good-title-1{
+.upload-form>div,#good-title,#good-description{
     margin-bottom: 10px;
 }
 .upload-form>button,.images-container{
@@ -153,7 +156,7 @@ export default {
     border-radius: 4px;
     background-color: #fff;
 }
-#good-title-2,#good-description{
+#good-title-words,#good-description{
     line-height: 38px;
     margin-bottom: 10px;
     color: rgb(161, 161, 161);

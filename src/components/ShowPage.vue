@@ -1,14 +1,56 @@
 <template>
     <div class="show-page">
+        <b-modal
+          v-model="affirmOrder"
+          title="支付"
+          header-bg-variant="dark"
+          header-text-variant="light"
+          body-bg-variant="light"
+          body-text-variant="dark"
+          footer-bg-variant="warning"
+          footer-text-variant="light"
+        >
+          <b-container class="d-flex justify-content-between align-items-start">
+              <p class="text-danger">合计：{{singlePrice}}元</p>
+              <img style="max-width:130px" src="../assets/wechatpay.jpg">
+              <img style="max-width:130px" src="../assets/alipay.jpg">
+          </b-container>
+
+          <template v-slot:modal-footer>
+            <div class="w-100">
+              <p class="float-left">
+                付款后给掌柜留言，留下邮递的地址联系方式
+                <b-form-checkbox
+                id="checkbox-1"
+                v-model="affirmStatus"
+                name="checkbox-1"
+                value="accepted"
+                unchecked-value="not_accepted"
+              >
+                已了解购买流程
+              </b-form-checkbox>
+            </p>
+              <b-button
+                variant="primary"
+                size="sm"
+                class="float-right"
+                @click="affirmOrder=false"
+                :disabled="affirmStatus != 'accepted'"
+              >
+                确认已支付
+              </b-button>
+            </div>
+          </template>
+        </b-modal>
         <ul ref="goodsCase" class="goods-case"  @scroll="refresh">
             <li v-for="(item, index) in goodsList" :key="index">
                 <img :src="item.path[0]" />
                 <div class="text-container">
                     <h3>{{item.trade_title}}</h3>
-                    <p>{{item.good_description}}</p>
+                    <p>{{item.good_description}}<i class="text-danger" style="font-size:12px">￥: {{item.price}}</i></p>
                     <b-button-group size="sm" class="d-flex">
-                        <b-button variant="light">加入购物车</b-button>
-                        <b-button variant="dark">购买</b-button>
+                        <b-button variant="light" @click="addProductToCart(item)">加入购物车</b-button>
+                        <b-button variant="dark" @click="buyItNow(item)">购买</b-button>
                     </b-button-group>
                 </div>
             </li>
@@ -20,6 +62,8 @@
     </div>
 </template>
 <script>
+import { mapMutations, mapActions } from 'vuex'
+
 export default {
     name: 'ShowCase',
     data() {
@@ -27,32 +71,32 @@ export default {
             offset: 0,
             goodsList: [],
             isRefreshing: true,
-            endFlag: false
+            endFlag: false,
+            affirmOrder: false,
+            affirmStatus: '',
+            singlePrice: Number
         }
     },
     mounted() {
-        // let newLiElement = document.createElement('li')
-        // newLiElement.innerHTML = `<img src="../assets/placeholderimg.png" />
-        //     <h3>漂亮的手机壳</h3>
-        //     <p>卡哇伊的造型，外镶亮晶晶的钻石，各种少女风格</p>`
-        // console.log(newLiElement)
-        // console.log(this.$el)
-        // this.$refs.goodsCase.appendChild(newLiElement)
-        // console.log(this.$refs.goodsCase)
         let context = this
         if(context.offset == 0){
             this.$axios.get('/get_goods_list?offset='+context.offset).then((response) =>{
                 response.data.forEach(element => {
                     element.path = JSON.parse(element.path)
                 });
-                let responseData = response.data
-                console.log(responseData)
-                context.goodsList = responseData
+                context.goodsList = [...response.data]
             })
             context.offset = 10
         }
     },
     methods: {
+        ...mapMutations('cart', [
+            'setBuyStatus'
+        ]),
+        ...mapActions('cart', [
+            'addProductToCart',
+            'setCartItems'
+        ]),
         refresh(e){
             if(e.target.scrollLeft == e.target.scrollLeftMax){
                 let context = this
@@ -83,6 +127,11 @@ export default {
                 }
                 return
             }
+        },
+        buyItNow(item) {
+            this.affirmOrder = true
+            this.singlePrice = item.price
+            // this.checkout()
         }
     }
 }
