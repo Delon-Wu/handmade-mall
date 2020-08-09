@@ -34,7 +34,7 @@
                 variant="primary"
                 size="sm"
                 class="float-right"
-                @click="affirmOrder=false"
+                @click="buyItNow()"
                 :disabled="affirmStatus != 'accepted'"
               >
                 确认已支付
@@ -50,7 +50,7 @@
                     <p>{{item.good_description}}<i class="text-danger" style="font-size:12px">￥: {{item.price}}</i></p>
                     <b-button-group size="sm" class="d-flex">
                         <b-button variant="light" @click="addProductToCart(item)">加入购物车</b-button>
-                        <b-button variant="dark" @click="buyItNow(item)">购买</b-button>
+                        <b-button variant="dark" @click="buy(item)">购买</b-button>
                     </b-button-group>
                 </div>
             </li>
@@ -74,7 +74,8 @@ export default {
             endFlag: false,
             affirmOrder: false,
             affirmStatus: '',
-            singlePrice: Number
+            singlePrice: Number,
+            singleProduct: []
         }
     },
     mounted() {
@@ -95,7 +96,8 @@ export default {
         ]),
         ...mapActions('cart', [
             'addProductToCart',
-            'setCartItems'
+            'setCartItems',
+            'buyItNowAction'
         ]),
         refresh(e){
             if(e.target.scrollLeft == e.target.scrollLeftMax){
@@ -128,10 +130,14 @@ export default {
                 return
             }
         },
-        buyItNow(item) {
+        buy(item) {
+            this.singleProduct[0]=item
             this.affirmOrder = true
             this.singlePrice = item.price
-            // this.checkout()
+        },
+        buyItNow() {
+            this.buyItNowAction(this.singleProduct)
+            this.affirmOrder = false
         }
     }
 }
