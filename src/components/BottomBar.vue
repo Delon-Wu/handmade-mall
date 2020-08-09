@@ -67,7 +67,7 @@
                 付款后给掌柜留言，留下邮递的地址联系方式
                 <b-form-checkbox
                 id="checkbox-1"
-                v-model="affirmStatus"
+                v-model="knewStatus"
                 name="checkbox-1"
                 value="accepted"
                 unchecked-value="not_accepted"
@@ -79,8 +79,8 @@
                 variant="primary"
                 size="sm"
                 class="float-right"
-                @click="submitOders"
-                :disabled="affirmStatus != 'accepted'"
+                @click="submitOders()"
+                :disabled="knewStatus != 'accepted'"
               >
                 确认已支付
               </b-button>
@@ -88,10 +88,26 @@
           </template>
         </b-modal>
 
+        <b-modal
+          id="orders-modal"
+          title="我的订单"
+          header-bg-variant="dark"
+          header-text-variant="light"
+          body-bg-variant="light"
+          body-text-variant="dark"
+        >
+            <b-list-group>
+              <b-list-group-item v-for="(item, index) in myOrders" :key="index" class="d-flex justify-content-between align-items-center">
+                {{item.trade_title}}
+                <span class="text-secondary" style="font-size:12px">数量：{{item.quantity}}件 - 单价：{{item.single_price}}元 - <span :class="item.state">状态：{{item.order_status}}</span></span>
+              </b-list-group-item>
+            </b-list-group>
+        </b-modal>
+
         <div class="flex-header">
           <span id="func-btn" v-show="isLogedIn">
             <b-icon-cart id="cart-btn" :variant="cartTotalPrice? 'danger': ''" v-b-toggle.sidebar-backdrop></b-icon-cart>
-            <b-icon-card-checklist v-b-tooltip.hover title="我的订单"></b-icon-card-checklist>
+            <b-icon-card-checklist v-b-tooltip.hover v-b-modal.orders-modal title="我的订单" @click="getMyOrders"></b-icon-card-checklist>
             <b-icon-cloud id="admin-btn" v-if="isManager" v-b-tooltip.hover title="后台管理" @click="goToManage()"></b-icon-cloud>
           </span>
           <h1 :class="{'align-left': bbTag}">月亮与六元の手作屋
@@ -121,13 +137,13 @@
               <b-button  type="reset" variant="danger">重置</b-button>
             </div>
         </b-form>
-        <b-button size="sm" variant="outline-warning" class="mb-2" v-show="!show" @click="logOut">
+        <b-button size="sm" variant="outline-warning" class="mb-2" v-show="isLogedIn" @click="logOut">
           <b-icon icon="power" aria-hidden="true"></b-icon> Logout
         </b-button>
     </div>
 </template>
 <script>
-import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 
 export default {
     name: 'BottomBar',
@@ -156,13 +172,23 @@ export default {
           return 'Please enter something'
         }
       },
-      ...mapState({
-        cart: state => state.cart,
-      }),
       ...mapGetters('cart', [
         'cartProducts',
-        'cartTotalPrice'
+        'cartTotalPrice',
+        'checkoutStatus'
       ])
+    },
+    watch: {
+      checkoutStatus: function (newStatus) {
+        this.affirmOrder = false
+        if(newStatus === 'successfull'){
+          this.makeToast(true, undefined, '订单提交成功 :-) 老板娘会火速给你核实并发货,谢谢你长得又帅/美，还光顾咱的小店！')
+          return true
+        }else if(newStatus === 'faild') {
+          this.makeToast(true, 'duang~', '提交时出现未知问题 :-( ,请与老板娘联系。谢谢你长得又帅/美，还光顾咱的小店！')
+          return false
+        }
+      }
     },
     data() {
       return {
@@ -175,12 +201,13 @@ export default {
         isLogedIn: false,
         isManager: false,
         affirmOrder: false,
-        affirmStatus: ''
+        knewStatus: '',
+        myOrders: []
       }
     },
     mounted() {
       let context = this
-      context.$axios.get('/log_in').then((response)=>{
+      context.$axios.get('/auth').then((response)=>{
         // console.log(response.data)
         if(response.data instanceof Object){
           context.show = false
@@ -189,7 +216,7 @@ export default {
           if(response.data.id === 1) context.isManager = true
         }else{
           context.show = true
-          context.isLogedIn= false
+          context.isLogedIn = false
         }
       }).catch(function(err){
               console.log(err)
@@ -212,18 +239,18 @@ export default {
         onSubmit(evt) {
             var context = this
             evt.preventDefault()
-            alert(context.nickName)
             context.$axios.post( '/log_up_or_in', {
               email: context.email,
               nickName: context.nickName || context.email,
               password: context.password
             }).then(function(res){
               const logCode = res.data.code
+              console.log(res.data)
               if(logCode == '0000' || logCode == '0001'){
                 context.nickName = res.data.nickName
                 context.show = false
                 context.isLogedIn = true
-                if(res.data.id === 1) context.isManager = true
+                if(res.data.id === 1) {context.isManager = true}
                 let logMessage = logCode == '0000'? '注册成功 :- )': '登录成功 :- )'
                 context.makeToast(false, undefined, logMessage)
               }else if(logCode == '0004'){
@@ -268,7 +295,33 @@ export default {
         },
         submitOders() {
           this.checkout()
-          this.affirmOrder = false
+        },
+        getMyOrders() {
+          if(!this.myOrders[0]){
+            this.$axios('/get_orders').then((res) => {
+              let responseData = res.data.data
+              responseData.forEach(element => {
+                switch (element.order_status){
+                  case 0:
+                    element.order_status = '核实中'
+                    element.state = 'text-primary'
+                    break;
+                  case 1:
+                    element.order_status = '运输中'
+                    element.state = 'text-warning'
+                    break;
+                  case 2:
+                    element.order_status = '已完成'
+                    element.state = 'text-success'
+                    break;
+                  case 3:
+                    element.order_status = '已退款'
+                    element.state = 'text-secondary'
+                }
+              });
+              this.myOrders = [...responseData]
+            })
+          }
         }
     }
 }
@@ -307,8 +360,10 @@ export default {
 }
 #func-btn{
   min-width: 280px;
+  height: 60px;
   display: flex;
   justify-content: space-evenly;
+  align-items: center;
   color: #b8b8b8;
   font-size: 18px;
 }

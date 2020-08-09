@@ -36,27 +36,34 @@ const getters = {
         // })
         return state.items
     },
-    buySatus: (state) => {
-        return state.buySatus
-    },
     cartTotalPrice: (state, getters) => {
         return getters.cartProducts.reduce((total, product) => {
             return (total*1000 + product.price*1000*product.quantity)/1000
         }, 0)
+    },
+    checkoutStatus: (state) => {
+        return state.checkoutStatus
     }
 }
 const actions = {
-    checkout({commit, state }, products) {
+    checkout({commit, state }) {
         const savedCartItems = [...state.items]
         commit('setCheckoutStatus', null)
         commit('setCartItems', {items: []})
         shop.buyProducts(
-            products,
+            savedCartItems,
             () => commit('setCheckoutStatus', 'successfull'),
             () => {
                 commit('setCheckoutStatus', 'faild')
                 commit('setCartItems', { items: savedCartItems})
             }
+        )
+    },
+    buyItNowAction({ commit }, singleProduct) {
+        commit('setCheckoutStatus', null)
+        shop.buyProducts(singleProduct,
+            () => commit('setCheckoutStatus', 'successfull'),
+            () => commit('setCheckoutStatus', 'faild')
         )
     },
     addProductToCart({ state, commit }, product) {

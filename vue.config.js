@@ -7,7 +7,7 @@ module.exports = {
                 ws: true,
                 changeOrigin: true
             },
-            '/log_in': {
+            '/auth': {
                 target: 'http://www.delon.store:8080/api',
                 ws: true,
                 changeOrigin: true
@@ -27,12 +27,12 @@ module.exports = {
                 ws: true,
                 changeOrigin: true
             },
-            '/post_oders': {
+            '/submit_orders': {
                 target: 'http://www.delon.store:8080/api',
                 ws: true,
                 changeOrigin: true
             },
-            '/get_oders': {
+            '/get_orders': {
                 target: 'http://www.delon.store:8080/api',
                 ws: true,
                 changeOrigin: true
