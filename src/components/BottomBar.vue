@@ -37,12 +37,21 @@
           shadow
         >
           <div class="px-3 py-2">
-            <p>
-              Cras mattis consectetur purus sit amet fermentum. Cras justo odio, dapibus ac facilisis
-              in, egestas eget quam. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
-            </p>
-            <b-img src="https://picsum.photos/500/500/?image=54" fluid thumbnail></b-img>
+
           </div>
+
+          
+          <template v-slot:footer>
+            <b-form>
+              <b-form-textarea
+                id="textarea-no-resize"
+                placeholder="请输入"
+                rows="3"
+                no-resize
+              ></b-form-textarea>
+              <b-button squared  block variant="success">发送</b-button>
+            </b-form>
+          </template>
         </b-sidebar>
 
         <b-modal
@@ -202,7 +211,8 @@ export default {
         isManager: false,
         affirmOrder: false,
         knewStatus: '',
-        myOrders: []
+        myOrders: [],
+        chatMessage: ''
       }
     },
     mounted() {
@@ -221,6 +231,7 @@ export default {
       }).catch(function(err){
               console.log(err)
         })
+      
     },
     methods: {
       ...mapMutations('cart',[
@@ -298,7 +309,7 @@ export default {
         },
         getMyOrders() {
           if(!this.myOrders[0]){
-            this.$axios('/get_orders').then((res) => {
+            this.$axios.get('/get_orders').then((res) => {
               let responseData = res.data.data
               responseData.forEach(element => {
                 switch (element.order_status){
@@ -322,8 +333,17 @@ export default {
               this.myOrders = [...responseData]
             })
           }
+        },
+        sendMessage() {
+
         }
-    }
+    },
+    
+        sockets: {
+            connect: function () {
+                console.log('socket connected', 1111111111)
+            }
+        }    
 }
 </script>
 <style scoped>
@@ -448,4 +468,22 @@ export default {
   transform: rotate(180deg);
   -webkit-transform: rotate(180deg);
 }
+/* #chat-form{
+  width: 100%; 
+  font-size: 0.8em;
+  margin: 3px 0;
+}
+#chat-input{
+  position: relative;
+  width: ;
+  padding: 3px 32px 3px 3px;
+  border-radius: 3px;
+  border: #555 solid 1px;
+}
+#chat-form button{
+  position: absolute;
+  right: 1px;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+} */
 </style>
