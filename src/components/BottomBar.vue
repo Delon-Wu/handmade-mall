@@ -37,7 +37,24 @@
           shadow
         >
           <div class="px-3 py-2">
-
+            <ul id="messages-list">
+              <li v-for="(item, index) in allMessage" :key="index">
+                <div v-if="item.isSelf" class="d-flex justify-content-end align-items-start">
+                  <p class="text-align-left">
+                    <span class="text-secondary text-align-right" style="font-size:8px;display:block;">我</span>
+                    {{item.message}}
+                  </p>
+                  <b-avatar size="2em" variant="light" class="flex-shrink-0"></b-avatar>
+                </div>
+                <div v-else class="d-flex justify-content-start align-items-start">
+                  <b-avatar size="2em" variant="light" class="flex-shrink-0"></b-avatar>
+                  <p class="text-align-left">
+                    <span class="text-secondary text-align-left" style="font-size:8px;display:block;">老板娘</span>
+                    {{item.message}}
+                  </p>
+                </div>
+              </li>
+            </ul>
           </div>
 
           
@@ -48,8 +65,11 @@
                 placeholder="请输入"
                 rows="3"
                 no-resize
+                v-model="chatMessage"
+                trim
+                @keydown.enter="sendMessage"
               ></b-form-textarea>
-              <b-button squared  block variant="success">发送</b-button>
+              <b-button squared  block variant="success" @click="sendMessage">发送</b-button>
             </b-form>
           </template>
         </b-sidebar>
@@ -185,6 +205,9 @@ export default {
         'cartProducts',
         'cartTotalPrice',
         'checkoutStatus'
+      ]),
+      ...mapGetters('chat', [
+        'allMessage'
       ])
     },
     watch: {
@@ -224,6 +247,8 @@ export default {
           context.isLogedIn = true
           context.nickName = response.data.nickname
           if(response.data.id === 1) context.isManager = true
+          //登入，开启聊天
+          context.$socket.emit('log in', {id: response.data.id, nickName: response.data.nickname})
         }else{
           context.show = true
           context.isLogedIn = false
@@ -231,11 +256,16 @@ export default {
       }).catch(function(err){
               console.log(err)
         })
-      
+      this.$socket.on('chat message', (data) => {
+        this.setMessage({isSelf: false, message: data.message})
+      })
     },
     methods: {
       ...mapMutations('cart',[
         'setCartItems'
+      ]),
+      ...mapMutations('chat',[
+        'setMessage'
       ]),
       ...mapActions('cart', [
         'checkout'
@@ -261,9 +291,11 @@ export default {
                 context.nickName = res.data.nickName
                 context.show = false
                 context.isLogedIn = true
-                if(res.data.id === 1) {context.isManager = true}
+                if(res.data.id == 1) {context.isManager = true}
                 let logMessage = logCode == '0000'? '注册成功 :- )': '登录成功 :- )'
                 context.makeToast(false, undefined, logMessage)
+                //登入，开启聊天
+                context.$socket.emit('log in', {id: res.data.id, nickName: res.data.nickName})
               }else if(logCode == '0004'){
                 context.makeToast(true, 'duang~', '密码错误哦 :-(')
               }
@@ -335,15 +367,11 @@ export default {
           }
         },
         sendMessage() {
-
+          this.$socket.emit('chat message', this.chatMessage)
+          this.setMessage({message: this.chatMessage})
+          this.chatMessage = ''
         }
-    },
-    
-        sockets: {
-            connect: function () {
-                console.log('socket connected', 1111111111)
-            }
-        }    
+    }
 }
 </script>
 <style scoped>
@@ -468,22 +496,20 @@ export default {
   transform: rotate(180deg);
   -webkit-transform: rotate(180deg);
 }
-/* #chat-form{
-  width: 100%; 
-  font-size: 0.8em;
-  margin: 3px 0;
+#messages-list{
+  width: 100%;
+  list-style: none;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
 }
-#chat-input{
-  position: relative;
-  width: ;
-  padding: 3px 32px 3px 3px;
-  border-radius: 3px;
-  border: #555 solid 1px;
+.text-align-right{
+  text-align: right;
+  font-size:12px;
 }
-#chat-form button{
-  position: absolute;
-  right: 1px;
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
-} */
+.text-align-left{
+  text-align: left;
+  font-size:12px;
+  word-break: break-word;
+}
 </style>

@@ -2,8 +2,8 @@
     <div class="management">
         <b-list-group @click="goTo" >
             <b-list-group-item button 
-                v-for="(menuItem, index) 
-                of menus" :data-index="index" 
+                v-for="(menuItem, index) of menus" 
+                :data-index="index" 
                 :key="index"
                 :active="menuItem.active"
                 :disabled="menuItem.disabled"
@@ -17,6 +17,7 @@
     </div>
 </template>
 <script>
+import { mapMutations } from 'vuex'
 export default {
     name: 'Management',
     data() {
@@ -29,23 +30,28 @@ export default {
                     disabled: false
                 },
                 {
-                    title: '上传新品',
-                    routeName: 'Upload',
-                    active: false,
-                    disabled: false
-                },
-                {
                     title: '订单',
                     routeName: 'Orders',
                     active: false,
                     disabled: false
                 },
                 {
+                    title: '上传新品',
+                    routeName: 'Upload',
+                    active: false,
+                    disabled: false
+                },
+                {
+                    title: '顾客交流',
+                    routeName: 'Communications',
+                    active: false
+                },
+                {
                     title: '物流',
                     routeName: 'Logistics',
                     active: false,
                     disabled: true
-                },
+                }
             ]
         }
     },
@@ -56,8 +62,17 @@ export default {
                 this.menus[i].active = true
             }
         }
+        this.$socket.emit('Manager in')
+    },
+    mounted() {
+        this.$socket.on('chat message', (messagesData)=>{
+            this.setMessagesList(messagesData)
+        })
     },
     methods: {
+        ...mapMutations('chat', [
+            'setMessagesList',
+        ]),
         goTo(e) {
             //用事件代理方法
              if (e.target.nodeName.toLowerCase() === 'button') {

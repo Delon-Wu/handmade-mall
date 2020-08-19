@@ -34,6 +34,11 @@ export default new Router({
             component: () => import('@/components/Orders.vue')
           },
           {
+            path: '/management/communications',
+            name: 'Communications',
+            component: () => import('@/components/Communications.vue')
+          },
+          {
             path: '/management/logistics',
             name: 'Logistics',
             component: () => import('@/components/Logistics.vue')

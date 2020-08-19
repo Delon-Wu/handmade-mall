@@ -14,8 +14,10 @@ Vue.use(BootstrapVueIcons)
 Vue.use(VueAxios,axios)
 
 Vue.prototype.$axios = axios
-Vue.prototype.$socket = socket('http://www.delon.store',{path: '/chatApi/'})
-Vue.$socket.emit('chat message', '错就错在server接入')
+Vue.prototype.$socket = socket('http://www.delon.store:3000')
+window.onunload = () => {
+  Vue.prototype.$socket.disconnect()
+}
 Vue.config.productionTip = true
 new Vue({
   router,
