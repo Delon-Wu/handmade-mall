@@ -2,7 +2,7 @@
 > Link: www.delon.store
 > > TEST account: 111@qq.com password: 123123456w  
 
-You can post goods,chat with clients point to point! That's amazing!
+You can post goods,chat with clients point to point,etc! That's amazing!
 
 ## Project setup
 ```
