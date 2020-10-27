@@ -1,6 +1,6 @@
 # phone-shell-mall
 > Link: www.delon.store
-> > TEST account: 111@qq.com password: 123123456
+> > TEST account: 111@qq.com password: 123123456w
 
 ## Project setup
 ```
